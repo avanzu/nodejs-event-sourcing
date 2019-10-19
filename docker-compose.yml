@@ -1,0 +1,94 @@
+version: '3'
+services:
+  eventstore:
+    image: eventstore/eventstore:latest
+    ports:
+        - 2113:2113
+        - 1113:1113
+  mongo:
+    image: mongo:latest
+    expose:
+      - "27017"
+      - "37017"
+    environment:
+      - MONGO_DATA_DIR=/data/db
+      - MONGO_LOG_DIR=/dev/null
+      - MONGODB_USER="user"
+      - MONGODB_PASS="pass"
+    volumes:
+      - ./volumes/mongodb/data:/data/db:rw
+    ports:
+      - 27017:27017
+
+  orders-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: app:orders-server
+    volumes:
+      - .:/usr/src/app/:rw
+    environment:
+      NODE_ENV: development
+      AUTH_SECRET: dTnd68c8IZjKBoKkAJQW9jciGVk=
+      HOSTNAME: orders-server
+      PORT: 3030
+      SERVICES: orders
+      WAIT_HOSTS: mongo:27017
+    entrypoint: "npm run wait:dev:orders"
+    expose:
+      - "3030"
+      - "56746"
+    ports:
+      - "3030:3030"
+      - "56746:56746"
+    depends_on:
+      - mongo
+
+  payment-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: app:payment-server
+    volumes:
+      - .:/usr/src/app/:rw
+    environment:
+      NODE_ENV: development
+      AUTH_SECRET: dTnd68c8IZjKBoKkAJQW9jciGVk=
+      WAIT_HOSTS: mongo:27017
+      HOSTNAME: payment-server
+      SERVICES: payments
+      PORT: 3040
+    entrypoint: "npm run wait:dev:payments"
+    expose:
+      - "3040"
+      - "56747"  
+    ports:
+      - "3040:3040"
+      - "56747:56747"
+    depends_on:
+      - mongo
+
+  checkout-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: app:checkout-server
+    volumes:
+      - .:/usr/src/app/:rw
+    environment:
+      NODE_ENV: development
+      AUTH_SECRET: dTnd68c8IZjKBoKkAJQW9jciGVk=
+      HOSTNAME: checkout-server
+      SERVICES: checkout
+      PORT: 3050
+      WAIT_HOSTS: mongo:27017, orders-server:3030, payment-server:3040
+    entrypoint: "npm run wait:dev:checkout"
+    expose:
+      - "3050"
+      - "56748"  
+    ports:
+      - "3050:3050"
+      - "56748:56748"
+    depends_on:
+      - payment-server
+      - orders-server

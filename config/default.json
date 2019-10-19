@@ -1,0 +1,18 @@
+{
+  "host": "localhost",
+  "port": 3030,
+  "public": "public/",
+  "paginate": {
+    "default": 10,
+    "max": 50
+  },
+  "eventStore": {
+    "host": "eventstore",
+    "port": 1113,
+    "credentials": {
+      "username": "admin",
+      "password": "changeit"
+    }
+  },
+  "mongodb": "mongodb://mongo:27017/event_sourcing"
+}

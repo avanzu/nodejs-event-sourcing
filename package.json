@@ -1,0 +1,64 @@
+{
+  "name": "event-sourcing",
+  "description": "",
+  "version": "0.0.0",
+  "main": "src",
+  "keywords": [
+    "feathers"
+  ],
+  "author": {
+    "name": "Marc Bach",
+    "email": "mail@avanzu.de"
+  },
+  "contributors": [],
+  "bugs": {},
+  "directories": {
+    "lib": "src",
+    "test": "test/",
+    "config": "config/"
+  },
+  "engines": {
+    "node": "^10.0.0",
+    "npm": ">= 3.0.0"
+  },
+  "scripts": {
+    "test": "npm run eslint && npm run jest",
+    "eslint": "eslint src/. test/. --config .eslintrc.json",
+    "dev": "nodemon src/",
+    "dev:orders": "nodemon src/service.order.js",
+    "dev:payments": "nodemon src/service.payment.js",
+    "dev:checkout": "nodemon src/service.checkout.js",
+    "wait:dev:orders": "/wait && nodemon src/service.order.js",
+    "wait:dev:payments": "/wait && nodemon src/service.payment.js",
+    "wait:dev:checkout": "/wait && nodemon src/service.checkout.js",
+    "start": "node src/",
+    "start:orders": "node src/service.order.js",
+    "start:payments": "node src/service.payment.js",
+    "start:checkout": "node src/service.checkout.js",
+    "jest": "jest  --forceExit"
+  },
+  "dependencies": {
+    "compression": "^1.7.4",
+    "config": "^3.2.3",
+    "cors": "^2.8.5",
+    "event-store-client": "^1.1.0",
+    "express": "^4.17.1",
+    "fp-types": "^1.0.1",
+    "helmet": "^3.21.1",
+    "immutable": "^4.0.0-rc.12",
+    "immutable-ext": "^1.1.5",
+    "mongodb": "^3.3.2",
+    "mongodb-core": "^3.2.7",
+    "ramda": "^0.26.1",
+    "rxjs": "^6.5.3",
+    "serve-favicon": "^2.5.0",
+    "uuid": "^3.3.3",
+    "winston": "^3.2.1"
+  },
+  "devDependencies": {
+    "axios": "^0.19.0",
+    "eslint": "^6.5.1",
+    "jest": "^24.9.0",
+    "nodemon": "^1.19.3"
+  }
+}

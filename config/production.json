@@ -1,0 +1,4 @@
+{
+  "host": "event-sourcing-app.feathersjs.com",
+  "port": "PORT"
+}
