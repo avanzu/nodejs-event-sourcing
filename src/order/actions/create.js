@@ -1,7 +1,7 @@
 const {OrderCreated, ItemAdded} = require('../events')
 
-module.exports =  params => () => {
-    const { id, items = [] } = params
+module.exports =  params => state => {
+    const { items = [] } = params
 
     const addItemEvent     = data => ({
         eventType: ItemAdded, data 
@@ -11,5 +11,5 @@ module.exports =  params => () => {
         eventType: OrderCreated, data
     }]
 
-    return createOrderEvent({id}).concat(items.map(addItemEvent))
+    return createOrderEvent(state).concat(items.map(addItemEvent))
 }

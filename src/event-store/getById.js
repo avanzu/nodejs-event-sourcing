@@ -1,43 +1,35 @@
-const { Observable } = require('rxjs')
-const { reduce } = require('rxjs/operators')
-const {compose} = require('ramda')
+const { prop} = require('ramda')
 const {Left, Right} = require('fp-types/lib/either')
-const { observableToTask } = require('../transformations')
+const Task = require('fp-types/lib/task')
+const noop = () => {}
+const fromPredicate     = predicate => value => predicate(value) ? Right(value) : Left(value)
 
-const whenResultIsError = code => code !== 0 ? Right(code) : Left(code)
-const whenTrue = value => !value ? Left(value) : Right(value)
-
+const whenResultIsOk    = fromPredicate(({ result }) => result === 0)
+const whenStreamHasMore = fromPredicate(({ isEndOfStream }) => !isEndOfStream )
 
 module.exports = ({connection, projections, $init, idOfStream, credentials}) => {
     
-    const readFromStream = (streamId, nextEventNumber, onEvent, done) =>
-        connection.readStreamEventsForward(streamId, nextEventNumber, 100, true, false, onEvent, credentials, done)
+    const streamReadError = ({error: message, result: code}) => Object.assign(new Error(message), {type: 'E_READ_EVENT_STREAM', status: 500, code})
 
-    const streamReadError = message => code => Object.assign(new Error(message), {type: 'E_READ_EVENT_STREAM', status: 500, code})
+    const readFromStream = (streamId, nextEventNumber, onComplete) =>
+        connection.readStreamEventsForward(streamId, nextEventNumber, 1, true, false, noop, credentials, onComplete)
 
-    const observableStream  = streamId => new Observable(subscriber => {
-        const onError       = error => subscriber.error(error)
-        const onStreamError = compose(Right, onError)
-        const onEvent       = e => subscriber.next(e)
-        const complete      = () => subscriber.complete()
+    // {result, error, isEndOfStream, events, nextEventNumber}
+    const readEvents = (streamId, state, start, onComplete) => 
+        readFromStream(streamId, start, result => {
+            whenResultIsOk(result)
+                .map(({events, ...rest}) => ({...rest, state: events.reduce(projections, state)}))
+                .chain(whenStreamHasMore)
+                .fold( onComplete, ({ nextEventNumber, state })  => readEvents(streamId, state, nextEventNumber, onComplete))
+        })
 
-        const onComplete    = ({result, isEndOfStream, nextEventNumber, error}) => {
 
-            const whenIsEndOfStream = () => whenTrue(isEndOfStream)
-            const readNextPortion   = () => readFromStream(streamId, nextEventNumber, onEvent, onComplete)
+    const getAggregate = id => new Task((reject, resolve) => {
+        const onComplete = result => 
+            whenResultIsOk(result).bimap( streamReadError, prop('state') ).fold(reject, resolve)
 
-            whenResultIsError(result)
-                .map(streamReadError(error))
-                .fold(whenIsEndOfStream, onStreamError)
-                .fold(readNextPortion, complete)
-        }
-
-        readFromStream(streamId, 0, onEvent, onComplete)
+        readEvents(idOfStream(id), $init(), 0, onComplete)
     })
 
-    const getObservableStream = compose( observableStream, idOfStream )
-
-    const aggregateFromStream = id => getObservableStream(id).pipe(reduce(projections, $init()))
-
-    return compose(observableToTask, aggregateFromStream)
+    return getAggregate
 }

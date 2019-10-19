@@ -1,7 +1,7 @@
 const app    = require('./app')
 const orders = require('./order/server')
 const errorHandler = require('./error-handler')
-const connectToStore = require('./event-store/event-store-observable')
+const connectToStore = require('./event-store')
 
 const eventStore = connectToStore({
     prefix: 'order', 

@@ -1,6 +1,5 @@
-const { of } = require('rxjs')
 const {Connection, ExpectedVersion} = require('event-store-client')
-const {compose} = require('ramda')
+const Task = require('fp-types/lib/task')
 
 const makeLoader = require('./getById')
 const makeWriter = require('./saveEvents')
@@ -25,12 +24,7 @@ module.exports = options => (projections, $init) => {
     const getById = makeLoader(config)
     const save   = makeWriter(config)
 
-    const create = id => Object.assign($init(), {id})
+    const create = id => Task.of($init()).map( state => ({...state, id }))
 
-    return { 
-        getById, 
-        create: compose(of, create),
-        save, 
-        connection 
-    }
+    return { getById, create, save, connection }
 }
