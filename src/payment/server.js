@@ -11,10 +11,7 @@ module.exports = ({eventStore}) => {
     })
 
     router.get('/payments/:id', (req, res, next) => {
-        repository.getById(req.params.id).subscribe({
-            next : result => res.json(result),
-            error: next
-        })
+        repository.getById(req.params.id).fork( next, result => res.json(result) )
     })
 
     return router

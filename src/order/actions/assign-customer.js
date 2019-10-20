@@ -1,7 +1,7 @@
 const { fromNullable } = require('fp-types/lib/either')
 const { CustomerAssigned, CustomerRemoved, CustomerChanged } = require('../events')
-
-module.exports = params =>  state => {
+const Task = require('fp-types/lib/task')
+module.exports = params =>  state => new Task((reject, resolve) => {
 
     const {customer} = params
 
@@ -17,13 +17,11 @@ module.exports = params =>  state => {
         eventType: CustomerChanged, data
     }]
 
-    return fromNullable(state.customer)
+    fromNullable(state.customer)
         .bimap(
             () => customerAssignedEvent(customer),
-            previous => customerRemovedEvent(previous)
-                .concat(customerAssignedEvent(customer))
-                .concat(customerChangedEvent({previous, customer})),
+            previous => customerRemovedEvent(previous).concat(customerAssignedEvent(customer)).concat(customerChangedEvent({previous, customer})),
         )
-        .merge()
+        .fold(resolve, resolve)
 
-}
+})

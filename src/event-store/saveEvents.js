@@ -1,18 +1,23 @@
 const {Left, Right}  = require('fp-types/lib/either')
 const Task           = require('fp-types/lib/task')
-const whenResultIsOk = code => code === 0 ? Right(code) : Left(code)
+const {StreamOperationError} = require('./errors')
+
+const fromPredicate  = predicate => value => predicate(value) ? Right(value) : Left(value)
+const whenResultIsOk = fromPredicate(({result}) => result === 0)
 
 module.exports = ({connection, ExpectedVersion, credentials, idOfStream, eventId}) => {
 
-    const streamWriteError = message => code => Object.assign(new Error(message), {type: 'E_WRITE_EVENT_STREAM', status: 500, code})
-    const toEventStoreEvent = event => Object.assign(event, { eventId: eventId(), metadata: {timestamp: Date.now()}})
+    const toEventStoreEvent = event => ({ ...event, eventId: eventId(), metadata: {timestamp: Date.now()}})
     const toEventStoreEvents = xs => xs.map(toEventStoreEvent)
 
     const writeEventsTo = aggregateId => events => new Task((reject, resolve) => {
+        
         const streamId = idOfStream(aggregateId)
-        const onComplete = ({ result, message, firstEventNumber, lastEventNumber, error }) => 
+        const generateWriteResult = ({firstEventNumber, lastEventNumber}) => ({ firstEventNumber, lastEventNumber, aggregateId, streamId })
+
+        const onComplete = result => 
             whenResultIsOk(result)
-                .bimap(streamWriteError(error), () => ({result, message, firstEventNumber, lastEventNumber, aggregateId, streamId}))
+                .bimap(StreamOperationError, generateWriteResult)
                 .fold(reject, resolve)
         
 

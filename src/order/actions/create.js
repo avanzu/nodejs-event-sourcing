@@ -1,6 +1,7 @@
 const {OrderCreated, ItemAdded} = require('../events')
+const Task = require('fp-types/lib/task')
 
-module.exports =  params => state => {
+module.exports =  params => state => new Task((reject, resolve) => {
     const { items = [] } = params
 
     const addItemEvent     = data => ({
@@ -11,5 +12,5 @@ module.exports =  params => state => {
         eventType: OrderCreated, data
     }]
 
-    return createOrderEvent(state).concat(items.map(addItemEvent))
-}
+    resolve(createOrderEvent(state).concat(items.map(addItemEvent)))
+})

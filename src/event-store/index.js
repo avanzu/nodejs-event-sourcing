@@ -3,6 +3,7 @@ const Task = require('fp-types/lib/task')
 
 const makeLoader = require('./getById')
 const makeWriter = require('./saveEvents')
+const makeSubscriber = require('./subscribe')
 
 
 module.exports = options => (projections, $init) => {
@@ -23,8 +24,9 @@ module.exports = options => (projections, $init) => {
 
     const getById = makeLoader(config)
     const save   = makeWriter(config)
+    const subscribe = makeSubscriber(config)
 
     const create = id => Task.of($init()).map( state => ({...state, id }))
 
-    return { getById, create, save, connection }
+    return { getById, create, save, subscribe, connection }
 }

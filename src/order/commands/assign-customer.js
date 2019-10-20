@@ -7,7 +7,7 @@ module.exports = ({eventStore}) => params => new Promise((next, error) => {
     const {getById, save} = eventStore
 
     getById(orderId)
-        .map(AssignCustomer(params))
+        .chain(AssignCustomer(params))
         .chain(save(orderId))
         .fork(error, next)
         
