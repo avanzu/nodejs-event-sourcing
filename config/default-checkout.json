@@ -1,0 +1,30 @@
+{
+    "host": "checkout-server",
+    "port": 3030,
+    "mongodb": "mongodb://mongo:27017/checkout",
+    "eventstore": {
+        "type": "mongodb",
+        "host": "mongo",
+        "port": 27017,
+        "dbName": "eventstore",
+        "eventsCollectionName": "events",
+        "snapshotsCollectionName": "snapshots",
+        "transactionsCollectionName": "transactions",
+        "timeout": 10000
+    },
+    "_eventstore": {
+        "type": "dynamodb",
+        "eventsTableName": "events",
+        "snapshotsTableName": "snapshots",
+        "undispatchedEventsTableName": "undispatched",
+        "EventsReadCapacityUnits": 1,
+        "EventsWriteCapacityUnits": 3,
+        "SnapshotReadCapacityUnits": 1,
+        "SnapshotWriteCapacityUnits": 3,
+        "UndispatchedEventsReadCapacityUnits": 1,
+        "useUndispatchedEventsTable": true,
+        "eventsTableStreamEnabled": false,
+        "eventsTableStreamViewType": "NEW_IMAGE",
+        "emitStoreEvents": true
+    }
+  }

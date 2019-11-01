@@ -1,39 +1,49 @@
 version: '3'
 services:
-  eventstore:
-    image: 'eventstore/eventstore:latest'
-    ports:
-      - '2113:2113'
-      - '1113:1113'
+#  eventstore:
+#    image: 'eventstore/eventstore:latest'
+#    ports:
+#      - '2113:2113'
+#      - '1113:1113'
+  dynamodb: 
+    image: 'amazon/dynamodb-local'
+    command: -jar DynamoDBLocal.jar -sharedDb -dbPath /home/dynamodblocal/data/
+    volumes: 
+      - './volumes/dynamodb:/home/dynamodblocal/data'
+    ports: 
+      - '8000:8000'
+
   mongo:
     image: 'mongo:latest'
+    container_name: 'mongodb'
+    ports: 
+      - '27017-27019:27017-27019'
     expose:
       - '27017'
-      - '37017'
     environment:
       - MONGO_DATA_DIR=/data/db
       - MONGO_LOG_DIR=/dev/null
-      - MONGODB_USER="user"
-      - MONGODB_PASS="pass"
+      # - MONGO_INITDB_ROOT_USERNAME="user"
+      # - MONGO_INITDB_ROOT_PASSWORD="pass"
     volumes:
-      - './volumes/mongodb/data:/data/db:rw'
+      - './volumes/mongodb/data:/data/db'
     ports:
       - '27017:27017'
-  orders-server:
+
+  booking-server:
     build:
       context: .
       dockerfile: Dockerfile
-    image: 'app:orders-server'
+    image: 'app:booking-server'
     volumes:
       - '.:/usr/src/app/:rw'
     environment:
       NODE_ENV: development
       AUTH_SECRET: dTnd68c8IZjKBoKkAJQW9jciGVk=
-      HOSTNAME: orders-server
+      HOSTNAME: booking-server
       PORT: 3030
-      SERVICES: orders
       WAIT_HOSTS: 'mongo:27017'
-    entrypoint: 'npm run wait:dev:orders'
+    entrypoint: 'npm run wait:dev:booking'
     expose:
       - '3030'
       - '56746'
@@ -42,6 +52,7 @@ services:
       - '56746:56746'
     depends_on:
       - mongo
+
   payment-server:
     build:
       context: .
@@ -65,6 +76,7 @@ services:
       - '56747:56747'
     depends_on:
       - mongo
+
   checkout-server:
     build:
       context: .
@@ -76,9 +88,10 @@ services:
       NODE_ENV: development
       AUTH_SECRET: dTnd68c8IZjKBoKkAJQW9jciGVk=
       HOSTNAME: checkout-server
-      SERVICES: checkout
+      AWS_DYNAMODB_ENDPOINT: 'http://dynamodb:8000'
+      AWS_REGION: 'eu-west-1'
       PORT: 3050
-      WAIT_HOSTS: 'mongo:27017, orders-server:3030, payment-server:3040'
+      WAIT_HOSTS: 'mongo:27017, dynamodb:8000, booking-server:3030, payment-server:3040'
     entrypoint: 'npm run wait:dev:checkout'
     expose:
       - '3050'
@@ -88,4 +101,4 @@ services:
       - '56748:56748'
     depends_on:
       - payment-server
-      - orders-server
+      - booking-server
