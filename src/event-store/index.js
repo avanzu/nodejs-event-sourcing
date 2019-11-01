@@ -1,8 +1,8 @@
 const {Connection, ExpectedVersion} = require('event-store-client')
 const Task = require('fp-types/lib/task')
 
-const makeLoader = require('./getById')
-const makeWriter = require('./saveEvents')
+const makeLoader     = require('./getById')
+const makeWriter     = require('./saveEvents')
 const makeSubscriber = require('./subscribe')
 
 
