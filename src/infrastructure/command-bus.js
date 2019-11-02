@@ -2,8 +2,6 @@ const {fromNullable: whenDefined } = require('fp-types/lib/either')
 const {Map} = require('immutable-ext')
 
 
-
-
 module.exports = (commandMap, options) => ({command, payload}) => new Promise((resolve, reject) => {
 
     

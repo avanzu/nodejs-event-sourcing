@@ -5,14 +5,20 @@ services:
 #    ports:
 #      - '2113:2113'
 #      - '1113:1113'
-  dynamodb: 
-    image: 'amazon/dynamodb-local'
-    command: -jar DynamoDBLocal.jar -sharedDb -dbPath /home/dynamodblocal/data/
-    volumes: 
-      - './volumes/dynamodb:/home/dynamodblocal/data'
-    ports: 
-      - '8000:8000'
-
+  activemq:
+    image: ivonet/activemq
+    ports:
+      - '8161:8161'
+      - '61616:61616'
+      - '61613:61613'
+    environment:
+      - ACTIVEMQ_MIN_MEMORY=512
+      - ACTIVEMQ_MAX_MEMORY=2048
+      - ACTIVEMQ_ENABLED_AUTH=true
+      - ACTIVEMQ_ADMIN_LOGIN=admin
+      - ACTIVEMQ_ADMIN_PASSWORD=secret
+    volumes:
+      - './volumes/activemq/log:/var/log/activemq'
   mongo:
     image: 'mongo:latest'
     container_name: 'mongodb'
@@ -88,10 +94,8 @@ services:
       NODE_ENV: development
       AUTH_SECRET: dTnd68c8IZjKBoKkAJQW9jciGVk=
       HOSTNAME: checkout-server
-      AWS_DYNAMODB_ENDPOINT: 'http://dynamodb:8000'
-      AWS_REGION: 'eu-west-1'
       PORT: 3050
-      WAIT_HOSTS: 'mongo:27017, dynamodb:8000, booking-server:3030, payment-server:3040'
+      WAIT_HOSTS: 'mongo:27017, booking-server:3030, payment-server:3040'
     entrypoint: 'npm run wait:dev:checkout'
     expose:
       - '3050'

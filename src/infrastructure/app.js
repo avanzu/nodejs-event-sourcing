@@ -16,13 +16,14 @@ const application = () => new Promise((resolve) => {
         info    : (...args) => logger.info(...args),
         error   : (...args) => logger.error(...args),
         debug   : (...args) => logger.debug(...args),
-        
     })
 
     app.configure = configurator => 
         new Promise((resolve, reject) => configurator(app).then(() => resolve(app)).catch(reject) )
-
-
+    
+    app.useCommandHandler = commandHandler => Object.assign(app, {handleCommand: commandHandler})
+    app.useStore          = store => Object.assign(app, {store})
+    
     app.use(cors())
     app.use(helmet())
     app.use(cors())
@@ -33,7 +34,6 @@ const application = () => new Promise((resolve) => {
     // Host the public folder
     app.use('/', express.static(app.param('public')))
 
-    
     resolve(app)
 })
 

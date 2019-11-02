@@ -1,0 +1,35 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "attach",
+            "name": "Attach to Checkout Service",
+            "address": "localhost",
+            "port": 56748,
+            "localRoot": "${workspaceFolder}",
+            "remoteRoot": "/usr/src/app"
+          },
+        {
+            "type": "node",
+            "request": "attach",
+            "name": "Attach to Booking Service",
+            "address": "localhost",
+            "port": 56746,
+            "localRoot": "${workspaceFolder}",
+            "remoteRoot": "/usr/src/app"
+          },
+        {
+            "type": "node",
+            "request": "attach",
+            "name": "Attach to Payment Service",
+            "address": "localhost",
+            "port": 56747,
+            "localRoot": "${workspaceFolder}",
+            "remoteRoot": "/usr/src/app"
+          },
+    ]
+}
